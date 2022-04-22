@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Arguments -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="x_init_pos" default="0.0"/>
+  <arg name="y_init_pos" default="-2.0"/>
+  <arg name="z_init_pos" default="0.0"/>
+
+  <arg name="rviz" default="true"/>
+  <arg name="rviz_config" default="$(find raspicat_gazebo)/launch/config/gazebo.rviz"/>
+
+  <!-- Gazebo -->
+  <include file="$(find raspicat_gazebo)/launch/raspicat_with_emptyworld.launch">
+    <arg name="world_name" value="$(find raspicat_gazebo)/worlds/iscas_museum.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+    <arg name="x_init_pos" value="0.0"/>
+    <arg name="y_init_pos" value="-2.0"/>
+    <arg name="z_init_pos" value="0.0"/>
+    <arg name="rviz" value="$(arg rviz)"/>
+    <arg name="rviz_config" value="$(arg rviz_config)"/>
+  </include>
+</launch>

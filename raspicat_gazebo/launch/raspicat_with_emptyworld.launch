@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Arguments -->
+  <arg name="model" default="$(find raspicat_description)/robots/raspicat.urdf.xacro"/>
+
+  <arg name="world_name" default="$(find raspicat_gazebo)/worlds/empty.world"/>
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="verbose" default="false"/>
+  <arg name="x_init_pos" default="0.0"/>
+  <arg name="y_init_pos" default="0.0"/>
+  <arg name="z_init_pos" default="0.0"/>
+
+  <arg name="rviz" default="false"/>
+  <arg name="rviz_config" default="$(find raspicat_gazebo)/launch/config/gazebo.rviz"/>
+  
+  <!-- Prameters -->
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)"/>
+  
+  <!-- Gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(arg world_name)"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="verbose" value="$(arg verbose)"/>
+  </include>
+
+  <!-- Spawn model -->
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" 
+    args="-urdf -model raspicat -x $(arg x_init_pos) -y $(arg y_init_pos) -z $(arg z_init_pos) -param robot_description"/>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+  <!-- raspicat simulation -->
+  <include file="$(find raspicat_gazebo)/launch/raspicat_simulation.launch"/>
+
+  <!-- Rviz -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" required="true" if="$(arg rviz)"/>
+</launch>

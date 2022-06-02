@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- nodes -->
-  <node pkg="raspicat_gazebo" type="motors_sim" name="motors_sim" required="true" output="screen">
+  <!-- Arguments -->
+  <arg name="initial_motor_power" default="on"/>
+
+  <!-- Nodes -->
+  <node pkg="raspicat_gazebo" type="motors_sim" name="motors_sim" required="true" output="screen" 
+        args="$(arg initial_motor_power)">
     <param name="check_cmdvel_rate"     value="10"/>
     <param name="num_callback_threads"  value="1"/>
   </node>
@@ -10,6 +14,4 @@
     <param name="publish_rate"          value="10"/>
     <param name="num_callback_threads"  value="1"/>
   </node>
-
-  <node pkg="rosservice" type="rosservice" name="motor_on" args="call --wait /motor_on"/>
 </launch>

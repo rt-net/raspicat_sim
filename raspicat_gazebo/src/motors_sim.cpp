@@ -22,12 +22,15 @@
 namespace motors_sim {
 class motors_sim final {
 public:
-  motors_sim(ros::NodeHandle &nodeHandle, ros::NodeHandle &private_nodeHandle)
-      : nh_(nodeHandle), pnh_(private_nodeHandle) {
+  motors_sim(ros::NodeHandle &nodeHandle, ros::NodeHandle &private_nodeHandle,
+             std::string &initial_motor_power)
+      : nh_(nodeHandle), pnh_(private_nodeHandle),
+        init_mt_pw_(initial_motor_power) {
     readParameters();
     initServiceServer();
     initPubSub();
     initTimerCb();
+    initialMotorPower();
   };
 
   ~motors_sim() { checkCmdVelTimer_.stop(); };
@@ -46,6 +49,7 @@ private:
   geometry_msgs::Twist vel_;
   bool is_on_ = false;
   bool in_cmdvel_ = false;
+  std::string init_mt_pw_;
 
   void readParameters() {
     double publishRate;
@@ -104,6 +108,11 @@ private:
     });
   }
 
+  void initialMotorPower() {
+    ROS_INFO("Initial motor_on.");
+    setPower(init_mt_pw_ == "on");
+  }
+
   void setPower(bool is_on) { is_on_ = is_on; }
 
   void pubSimCmdVel(const geometry_msgs::Twist &sim_cmd_vel) {
@@ -125,9 +134,13 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh;
   ros::NodeHandle pnh("~");
 
-  motors_sim::motors_sim motors_sim(nh, pnh);
+  std::string onoff;
+  if (argc > 1)
+    onoff = argv[1];
 
-  ros::AsyncSpinner spinner(pnh.param("num_callback_threads", 3));
+  motors_sim::motors_sim motors_sim(nh, pnh, onoff);
+
+  ros::AsyncSpinner spinner(pnh.param("num_callback_threads", 4));
   spinner.start();
   ros::waitForShutdown();
   return 0;

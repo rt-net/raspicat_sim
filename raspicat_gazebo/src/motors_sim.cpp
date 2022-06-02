@@ -19,13 +19,14 @@
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
 
-namespace motors_sim {
-class motors_sim final {
+namespace motors_sim
+{
+class motors_sim final
+{
 public:
-  motors_sim(ros::NodeHandle &nodeHandle, ros::NodeHandle &private_nodeHandle,
-             std::string &initial_motor_power)
-      : nh_(nodeHandle), pnh_(private_nodeHandle),
-        init_mt_pw_(initial_motor_power) {
+  motors_sim(ros::NodeHandle& nodeHandle, ros::NodeHandle& private_nodeHandle, std::string& initial_motor_power)
+    : nh_(nodeHandle), pnh_(private_nodeHandle), init_mt_pw_(initial_motor_power)
+  {
     readParameters();
     initServiceServer();
     initPubSub();
@@ -33,7 +34,10 @@ public:
     initialMotorPower();
   };
 
-  ~motors_sim() { checkCmdVelTimer_.stop(); };
+  ~motors_sim()
+  {
+    checkCmdVelTimer_.stop();
+  };
 
 private:
   ros::NodeHandle nh_;
@@ -51,22 +55,26 @@ private:
   bool in_cmdvel_ = false;
   std::string init_mt_pw_;
 
-  void readParameters() {
+  void readParameters()
+  {
     double publishRate;
     pnh_.param("check_cmdvel_rate", publishRate, 10.0);
-    if (publishRate == 0.0) {
+    if (publishRate == 0.0)
+    {
       checkCmdVelDuration_.fromSec(0.0);
       ROS_WARN("The rate for checking the value of cmd_vel is 0.");
-    } else {
+    }
+    else
+    {
       checkCmdVelDuration_.fromSec(1.0 / publishRate);
     }
     ROS_ASSERT(!checkCmdVelDuration_.isZero());
   }
 
-  void initServiceServer() {
-    srv_motor_on_ = nh_.advertiseService<std_srvs::TriggerRequest,
-                                         std_srvs::TriggerResponse>(
-        "motor_on", [&](auto &req, auto &res) {
+  void initServiceServer()
+  {
+    srv_motor_on_ = nh_.advertiseService<std_srvs::TriggerRequest, std_srvs::TriggerResponse>(
+        "motor_on", [&](auto& req, auto& res) {
           ROS_INFO("Called service motor_on.");
           setPower(true);
           res.message = "Motor On";
@@ -74,9 +82,8 @@ private:
           return true;
         });
 
-    srv_motor_off_ = nh_.advertiseService<std_srvs::TriggerRequest,
-                                          std_srvs::TriggerResponse>(
-        "motor_off", [&](auto &req, auto &res) {
+    srv_motor_off_ = nh_.advertiseService<std_srvs::TriggerRequest, std_srvs::TriggerResponse>(
+        "motor_off", [&](auto& req, auto& res) {
           ROS_INFO("Called service motor_off.");
           setPower(false);
           pubZeroSimCmdVel();
@@ -86,50 +93,56 @@ private:
         });
   }
 
-  void initPubSub() {
-    sim_cmd_vel_publisher_ =
-        pnh_.advertise<geometry_msgs::Twist>("/sim_cmd_vel", 1);
+  void initPubSub()
+  {
+    sim_cmd_vel_publisher_ = pnh_.advertise<geometry_msgs::Twist>("/sim_cmd_vel", 1);
 
-    cmd_vel_subscriber_ = pnh_.subscribe<geometry_msgs::Twist>(
-        "/cmd_vel", 1, [&](const auto &msg) {
-          vel_ = *msg;
-          pubSimCmdVel(*msg);
-          last_cmdvel_ = ros::Time::now();
-          in_cmdvel_ = true;
-        });
+    cmd_vel_subscriber_ = pnh_.subscribe<geometry_msgs::Twist>("/cmd_vel", 1, [&](const auto& msg) {
+      vel_ = *msg;
+      pubSimCmdVel(*msg);
+      last_cmdvel_ = ros::Time::now();
+      in_cmdvel_ = true;
+    });
   }
 
-  void initTimerCb() {
-    checkCmdVelTimer_ = pnh_.createTimer(checkCmdVelDuration_, [&](auto &) {
-      if (in_cmdvel_ and
-          ros::Time::now().toSec() - last_cmdvel_.toSec() >= 1.0) {
-            pubZeroSimCmdVel();
+  void initTimerCb()
+  {
+    checkCmdVelTimer_ = pnh_.createTimer(checkCmdVelDuration_, [&](auto&) {
+      if (in_cmdvel_ and ros::Time::now().toSec() - last_cmdvel_.toSec() >= 1.0)
+      {
+        pubZeroSimCmdVel();
       }
     });
   }
 
-  void initialMotorPower() {
+  void initialMotorPower()
+  {
     ROS_INFO("Initial motor_on.");
     setPower(init_mt_pw_ == "on");
   }
 
-  void setPower(bool is_on) { is_on_ = is_on; }
-
-  void pubSimCmdVel(const geometry_msgs::Twist &sim_cmd_vel) {
-    geometry_msgs::Twist zero_vel;
-    is_on_ ? sim_cmd_vel_publisher_.publish(sim_cmd_vel)
-           : sim_cmd_vel_publisher_.publish(zero_vel);
+  void setPower(bool is_on)
+  {
+    is_on_ = is_on;
   }
 
-  void pubZeroSimCmdVel() {
+  void pubSimCmdVel(const geometry_msgs::Twist& sim_cmd_vel)
+  {
+    geometry_msgs::Twist zero_vel;
+    is_on_ ? sim_cmd_vel_publisher_.publish(sim_cmd_vel) : sim_cmd_vel_publisher_.publish(zero_vel);
+  }
+
+  void pubZeroSimCmdVel()
+  {
     geometry_msgs::Twist zero_vel;
     sim_cmd_vel_publisher_.publish(zero_vel);
   }
 };
 
-} // namespace motors_sim
+}  // namespace motors_sim
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv)
+{
   ros::init(argc, argv, "motors_sim");
   ros::NodeHandle nh;
   ros::NodeHandle pnh("~");

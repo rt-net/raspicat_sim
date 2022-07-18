@@ -24,12 +24,15 @@ include_directories(
 add_executable(ultrasonic_convert
   src/ultrasonic_sensor_real_data_convert.cpp
 )
-add_executable(motors_sim
-  src/motors_sim.cpp
+add_dependencies(ultrasonic_convert
+  ${TARGET_NAME} raspimouse_msgs_generate_messages_cpp
 )
-
 target_link_libraries(ultrasonic_convert
   ${catkin_LIBRARIES}
+)
+
+add_executable(motors_sim
+  src/motors_sim.cpp
 )
 target_link_libraries(motors_sim
   ${catkin_LIBRARIES}

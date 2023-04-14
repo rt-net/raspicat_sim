@@ -1,55 +1,22 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.8)
 project(raspicat_gazebo)
 
 set(CMAKE_CXX_FLAGS "-std=c++14 -O3 ${CMAKE_CXX_FLAGS}")
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  gazebo_ros
-  gazebo_plugins
-  gazebo_ros_control
-  xacro
-  raspimouse_msgs
-)
+find_package(ament_cmake_auto REQUIRED)
 
-catkin_package(
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp
-)
+ament_auto_find_build_dependencies()
 
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
 
-add_executable(ultrasonic_convert
-  src/ultrasonic_sensor_real_data_convert.cpp
-)
-add_dependencies(ultrasonic_convert
-  ${TARGET_NAME} raspimouse_msgs_generate_messages_cpp
-)
-target_link_libraries(ultrasonic_convert
-  ${catkin_LIBRARIES}
-)
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  set(ament_cmake_copyright_FOUND TRUE)
+  set(ament_cmake_cpplint_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
+endif()
 
-add_executable(motors_sim
-  src/motors_sim.cpp
-)
-target_link_libraries(motors_sim
-  ${catkin_LIBRARIES}
-)
-
-install(TARGETS ultrasonic_convert motors_sim
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
-install(DIRECTORY launch worlds
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  USE_SOURCE_PERMISSIONS
-)
-
-install(PROGRAMS
-  scripts/download_gazebo_models.sh
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ament_auto_package(
+  INSTALL_TO_SHARE
+  launch
+  worlds
 )

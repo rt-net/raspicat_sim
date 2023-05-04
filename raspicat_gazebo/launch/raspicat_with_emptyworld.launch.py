@@ -15,10 +15,8 @@ def generate_launch_description():
     raspicat_bringup_launch_dir = os.path.join(
         get_package_share_directory('raspicat_bringup'), 'launch')
 
-    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     gui = LaunchConfiguration('gui', default='true')
     world = LaunchConfiguration('world')
-
     x_pose = LaunchConfiguration('x_pose', default='0.0')
     y_pose = LaunchConfiguration('y_pose', default='0.0')
 
@@ -26,17 +24,10 @@ def generate_launch_description():
         'verbose', default_value='false',
         description='Set "true" to increase messages written to terminal'
     )
-
-    declare_use_sim_time = DeclareLaunchArgument(
-        'use_sim_time',
-        default_value='true',
-        description='Use simulation (Gazebo) clock if true')
-
     declare_world = DeclareLaunchArgument(
         'gui', default_value='true',
         description='Set to "false" to run headless.'
     )
-
     declare_world = DeclareLaunchArgument(
         'world', default_value=os.path.join(
             get_package_share_directory('raspicat_gazebo'),
@@ -44,11 +35,9 @@ def generate_launch_description():
             'empty.world'),
         description='world configuration file path'
     )
-
     declare_x_position = DeclareLaunchArgument(
         'x_pose', default_value='0.0',
         description='x position of robot')
-
     declare_y_position = DeclareLaunchArgument(
         'y_pose', default_value='0.0',
         description='y position of robot')
@@ -72,7 +61,8 @@ def generate_launch_description():
             os.path.join(raspicat_bringup_launch_dir,
                          'robot_state_publisher.launch.py')
         ),
-        launch_arguments={'use_sim_time': use_sim_time}.items()
+        launch_arguments={
+            'use_joint_state_publisher': 'False'}.items()
     )
 
     spawn_raspicat = IncludeLaunchDescription(
@@ -88,7 +78,6 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     ld.add_action(declare_verbose)
-    ld.add_action(declare_use_sim_time)
     ld.add_action(declare_world)
     ld.add_action(declare_x_position)
     ld.add_action(declare_y_position)

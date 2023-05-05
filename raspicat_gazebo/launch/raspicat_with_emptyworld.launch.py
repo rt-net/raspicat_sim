@@ -75,6 +75,12 @@ def generate_launch_description():
         }.items()
     )
 
+    raspicat_sim = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(this_launch_dir, 'raspicat_simulation.launch.py')
+        )
+    )
+
     ld = LaunchDescription()
 
     ld.add_action(declare_verbose)
@@ -86,5 +92,6 @@ def generate_launch_description():
     ld.add_action(gzclient)
     ld.add_action(robot_state_publisher)
     ld.add_action(spawn_raspicat)
+    ld.add_action(raspicat_sim)
 
     return ld

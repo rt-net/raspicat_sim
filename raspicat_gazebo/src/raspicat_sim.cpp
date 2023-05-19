@@ -28,6 +28,7 @@ RaspicatSim::RaspicatSim(const std::string & node_name, bool intra_process_comms
     rclcpp::NodeOptions().use_intra_process_comms(intra_process_comms))
 {
 }
+
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 RaspicatSim::on_configure(const rclcpp_lifecycle::State &)
 {
@@ -36,12 +37,27 @@ RaspicatSim::on_configure(const rclcpp_lifecycle::State &)
   declare_parameter(INIT_MOTOR_POWER_PARAM, false);
 
   sim_cmd_vel_pub_ = create_publisher<geometry_msgs::msg::Twist>("sim_cmd_vel", 10);
+  light_sensors_pub_ = create_publisher<raspimouse_msgs::msg::LightSensors>("lightsensors", 10);
   velocity_sub_ = create_subscription<geometry_msgs::msg::Twist>(
     "cmd_vel", 10,
     std::bind(&RaspicatSim::velocity_command, this, _1));
+  left_side_usensor_sub_ = create_subscription<sensor_msgs::msg::Range>(
+    "ray/left_side_ultrasonic_sensor", 10,
+    [this](const sensor_msgs::msg::Range::ConstSharedPtr msg) {left_side_msg_ = *msg;});
+  left_front_usensor_sub_ = create_subscription<sensor_msgs::msg::Range>(
+    "ray/left_front_ultrasonic_sensor", 10,
+    [this](const sensor_msgs::msg::Range::ConstSharedPtr msg) {left_front_msg_ = *msg;});
+  right_front_usensor_sub_ = create_subscription<sensor_msgs::msg::Range>(
+    "ray/right_front_ultrasonic_sensor", 10,
+    [this](const sensor_msgs::msg::Range::ConstSharedPtr msg) {right_front_msg_ = *msg;});
+  right_side_usensor_sub_ = create_subscription<sensor_msgs::msg::Range>(
+    "ray/right_side_ultrasonic_sensor", 10,
+    [this](const sensor_msgs::msg::Range::ConstSharedPtr msg) {right_side_msg_ = *msg;});
   power_service_ = create_service<std_srvs::srv::SetBool>(
     "motor_power", std::bind(&RaspicatSim::handle_motor_power, this, _1, _2, _3));
   watchdog_timer_ = create_wall_timer(60s, std::bind(&RaspicatSim::watchdog, this));
+  light_sensors_pub_timer_ =
+    create_wall_timer(100ms, std::bind(&RaspicatSim::publishLightSensors, this));
 
   set_motor_power(false);
 
@@ -96,6 +112,36 @@ RaspicatSim::on_shutdown(const rclcpp_lifecycle::State & state)
   release_pointers();
 
   return CallbackReturn::SUCCESS;
+}
+
+void RaspicatSim::publishLightSensors()
+{
+  raspimouse_msgs::msg::LightSensors msg;
+  msg.left = limitValue(convetMetetrToMillimeter(left_side_msg_.range));
+  msg.forward_l = limitValue(convetMetetrToMillimeter(left_front_msg_.range));
+  msg.forward_r = limitValue(convetMetetrToMillimeter(right_front_msg_.range));
+  msg.right = limitValue(convetMetetrToMillimeter(right_side_msg_.range));
+
+  light_sensors_pub_->publish(msg);
+}
+
+float RaspicatSim::limitValue(float range_value)
+{
+  if (range_value <= 10) {
+    range_value = 4095;
+  } else if (range_value > 10 && range_value <= 19) {
+    range_value += +20;
+  } else if (range_value > 20 && range_value <= 29) {
+    range_value += 10;
+  } else if (range_value >= 3800) {
+    range_value = 4095;
+  }
+  return range_value;
+}
+
+float RaspicatSim::convetMetetrToMillimeter(float & range_value)
+{
+  return range_value * 1000;
 }
 
 void RaspicatSim::velocity_command(const geometry_msgs::msg::Twist::SharedPtr msg)

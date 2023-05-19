@@ -15,23 +15,14 @@
 #ifndef RASPICAT_GAZEBO__RASPICAT_SIM_HPP_
 #define RASPICAT_GAZEBO__RASPICAT_SIM_HPP_
 
-#include <chrono>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <thread>
-#include <utility>
-
-#include "lifecycle_msgs/msg/transition.hpp"
-
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp/publisher.hpp"
-
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
-#include "rclcpp_lifecycle/lifecycle_publisher.hpp"
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
 
 #include <std_srvs/srv/set_bool.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <sensor_msgs/msg/range.hpp>
+#include <lifecycle_msgs/msg/transition.hpp>
+#include <raspimouse_msgs/msg/light_sensors.hpp>
 
 namespace raspicatsim
 {
@@ -40,6 +31,7 @@ class RaspicatSim : public rclcpp_lifecycle::LifecycleNode
 public:
   explicit RaspicatSim(const std::string & node_name, bool intra_process_comms = false);
 
+protected:
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
   on_configure(const rclcpp_lifecycle::State &);
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
@@ -50,6 +42,10 @@ public:
     const rclcpp_lifecycle::State &);
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
   on_shutdown(const rclcpp_lifecycle::State & state);
+
+  void publishLightSensors();
+  float limitValue(float range_value);
+  float convetMetetrToMillimeter(float & range_value);
 
   void velocity_command(const geometry_msgs::msg::Twist::SharedPtr msg);
   void handle_motor_power(
@@ -65,9 +61,20 @@ public:
 
 private:
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr sim_cmd_vel_pub_;
+  rclcpp::Publisher<raspimouse_msgs::msg::LightSensors>::SharedPtr light_sensors_pub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr velocity_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::Range>::SharedPtr left_side_usensor_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::Range>::SharedPtr left_front_usensor_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::Range>::SharedPtr right_front_usensor_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::Range>::SharedPtr right_side_usensor_sub_;
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr power_service_;
   rclcpp::TimerBase::SharedPtr watchdog_timer_;
+  rclcpp::TimerBase::SharedPtr light_sensors_pub_timer_;
+
+  sensor_msgs::msg::Range left_front_msg_;
+  sensor_msgs::msg::Range left_side_msg_;
+  sensor_msgs::msg::Range right_front_msg_;
+  sensor_msgs::msg::Range right_side_msg_;
 
   bool motor_power_flag_;
 };

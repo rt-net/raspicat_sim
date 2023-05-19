@@ -60,8 +60,9 @@ protected:
   void release_pointers();
 
 private:
-  rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr sim_cmd_vel_pub_;
-  rclcpp::Publisher<raspimouse_msgs::msg::LightSensors>::SharedPtr light_sensors_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::Twist>::SharedPtr sim_cmd_vel_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<raspimouse_msgs::msg::LightSensors>::SharedPtr
+    light_sensors_pub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr velocity_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Range>::SharedPtr left_side_usensor_sub_;
   rclcpp::Subscription<sensor_msgs::msg::Range>::SharedPtr left_front_usensor_sub_;

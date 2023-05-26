@@ -1,17 +1,17 @@
 # raspicat_sim
 
-Gazebo上でシミュレートできるRaspberry Pi CatのROSパッケージ一式です。
+Gazebo上でシミュレートできるRaspberry Pi CatのROS 2パッケージ一式です。
 
 ![raspicat_sim](https://rt-net.github.io/images/raspberry-pi-cat/raspicat_gazebo_with_iscas_museum.gif)
 
 ## Requirements
 
 - Linux OS
-  - [Ubuntu Desktop 18.04](https://ubuntu.com/download/desktop)
-- ROS
-  - [Melodic Morenia](https://wiki.ros.org/melodic)
+  - [Ubuntu Desktop 22.04](https://ubuntu.com/download/desktop)
+- ROS 2
+  - [Humble Hawksbill](https://docs.ros.org/en/humble/Installation.html)
 - Gazebo
-  - Gazebo 9.x
+  - Gazebo 11.x
 
 ## Installation
 ### Source Build
@@ -19,9 +19,10 @@ Gazebo上でシミュレートできるRaspberry Pi CatのROSパッケージ一�
 ```sh
 # パッケージのダウンロード
 cd ~/catkin_ws/src
-git clone -b $ROS_DISTRO-devel https://github.com/rt-net/raspicat_sim.git
-git clone -b $ROS_DISTRO-devel https://github.com/rt-net/raspicat_description.git
-git clone -b $ROS_DISTRO-devel https://github.com/rt-net/raspimouse.git
+git clone -b ros2 https://github.com/rt-net/raspicat_sim.git
+git clone -b ros2 https://github.com/rt-net/raspicat_description.git
+git clone -b ros2 https://github.com/rt-net/raspicat_ros.git
+git clone -b $ROS_DISTRO-devel https://github.com/rt-net/raspimouse2
 
 # 依存パッケージのインストール
 rosdep update
@@ -29,8 +30,8 @@ rosdep install -r -y -i --from-paths raspicat* raspimouse*
 
 # ビルド＆インストール
 cd ~/catkin_ws
-catkin_make
-source ~/catkin_ws/devel/setup.bash
+colcon build --symlink-install
+source ~/catkin_ws/install/setup.bash
 ```
 
 ## Package Overview

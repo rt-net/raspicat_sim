@@ -19,10 +19,12 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import EmitEvent
 from launch.actions import RegisterEventHandler
+from launch.conditions import IfCondition
 from launch.events import matches_action
 from launch.events import Shutdown
+from launch.substitutions import LaunchConfiguration
 
-from launch_ros.actions import LifecycleNode
+from launch_ros.actions import Node, LifecycleNode
 from launch_ros.events import lifecycle
 from launch_ros.event_handlers import OnStateTransition
 
@@ -30,6 +32,8 @@ from lifecycle_msgs.msg import Transition
 
 
 def generate_launch_description():
+
+    rviz = LaunchConfiguration('rviz', default='true')
 
     raspicat_sim_node = LifecycleNode(
         namespace='',
@@ -79,11 +83,24 @@ def generate_launch_description():
         )
     )
 
+    rviz_config_file = os.path.join(get_package_share_directory(
+        'raspicat_gazebo'), 'launch', 'config', 'gazebo.rviz')
+    rviz2 = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        output='log',
+        arguments=['-d', rviz_config_file],
+        condition=IfCondition(rviz)
+    )
+
     ld = LaunchDescription()
 
     ld.add_action(raspicat_sim_node)
     ld.add_action(register_activating_transition)
     ld.add_action(register_shutting_down_transition)
     ld.add_action(emit_configuring_event)
+
+    ld.add_action(rviz2)
 
     return ld

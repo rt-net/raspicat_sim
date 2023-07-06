@@ -30,6 +30,7 @@ def generate_launch_description():
         get_package_share_directory('raspicat_bringup'), 'launch')
 
     gui = LaunchConfiguration('gui', default='true')
+    rviz = LaunchConfiguration('rviz', default='true')
     world = LaunchConfiguration('world')
     x_pose = LaunchConfiguration('x_pose', default='0.0')
     y_pose = LaunchConfiguration('y_pose', default='0.0')
@@ -92,7 +93,10 @@ def generate_launch_description():
     raspicat_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(this_launch_dir, 'raspicat_simulation.launch.py')
-        )
+        ),
+        launch_arguments={
+            'rviz': rviz
+        }.items()
     )
 
     ld = LaunchDescription()
